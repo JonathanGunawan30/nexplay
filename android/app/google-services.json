@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "92598071273",
+    "project_id": "nexplay-np1",
+    "storage_bucket": "nexplay-np1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92598071273:android:72d62240d56e80d3ce2578",
+        "android_client_info": {
+          "package_name": "com.example.nexplay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "92598071273-ften30v59as0nrbijo9kd7272u1o6r2v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBewbuYl_qjew1xN863_ExEERoMdnu6ky8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "92598071273-ften30v59as0nrbijo9kd7272u1o6r2v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
