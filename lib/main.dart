@@ -5,14 +5,14 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/success_screen.dart';
 import 'features/profile/providers/profile_provider.dart';
-import 'features/profile/screens/profile_screen.dart';
+import 'features/games/screens/home_screen.dart';
+import 'features/games/providers/game_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   await dotenv.load(fileName: ".env");
-  
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -26,6 +26,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => GameProvider()),
       ],
       child: const NexPlayApp(),
     ),
@@ -49,73 +50,37 @@ class NexPlayApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
-    if (authProvider.isAuthenticated) {
-      return const HomeScreen();
-    } else {
-      return const LoginScreen();
-    }
-  }
+  State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _showSuccess = false;
+  bool? _wasAuthenticated;
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('NexPlay'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => authProvider.signOut(),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: (user?.photoURL != null && user!.photoURL!.isNotEmpty)
-                  ? NetworkImage(user.photoURL!)
-                  : null,
-              child: (user?.photoURL == null || user!.photoURL!.isEmpty)
-                  ? const Icon(Icons.person, size: 50)
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Welcome, ${user?.displayName ?? 'User'}!',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(user?.email ?? ''),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                );
-              },
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Profile'),
-            ),
-          ],
-        ),
-      ),
-    );
+    final bool isAuthenticated = authProvider.isAuthenticated;
+
+    if (_wasAuthenticated != null && _wasAuthenticated == false && isAuthenticated) {
+      _showSuccess = true;
+    }
+    _wasAuthenticated = isAuthenticated;
+
+    if (_showSuccess) {
+      return SuccessScreen(
+        onFinished: () {
+          setState(() {
+            _showSuccess = false;
+          });
+        },
+      );
+    }
+
+    return isAuthenticated ? const HomeScreen() : const LoginScreen();
   }
 }

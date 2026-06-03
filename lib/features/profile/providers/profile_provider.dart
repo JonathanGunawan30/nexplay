@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -16,7 +15,11 @@ class ProfileProvider with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  Future<void> updateProfile({String? newName, XFile? imageFile}) async {
+  Future<void> updateProfile({
+    String? newName,
+    String? newBio,
+    XFile? imageFile,
+  }) async {
     _setLoading(true);
     try {
       User? user = _auth.currentUser;
@@ -24,8 +27,15 @@ class ProfileProvider with ChangeNotifier {
 
       String? photoUrl;
       if (imageFile != null) {
+        DocumentSnapshot userDoc = await _db.collection(AppConstants.usersCollection).doc(user.uid).get();
+        if (userDoc.exists) {
+           String? oldPhotoUrl = (userDoc.data() as Map<String, dynamic>)['photoURL'];
+           if (oldPhotoUrl != null && oldPhotoUrl.contains('cloudinary.com')) {
+             await _cloudinaryService.deleteImage(oldPhotoUrl);
+           }
+        }
         photoUrl = await _cloudinaryService.uploadImage(
-          File(imageFile.path),
+          imageFile,
           folder: 'profile_pictures',
         );
       }
@@ -34,6 +44,9 @@ class ProfileProvider with ChangeNotifier {
       if (newName != null && newName.isNotEmpty) {
         updates['displayName'] = newName;
         await user.updateDisplayName(newName);
+      }
+      if (newBio != null) {
+        updates['bio'] = newBio;
       }
       if (photoUrl != null) {
         updates['photoURL'] = photoUrl;

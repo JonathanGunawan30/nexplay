@@ -5,6 +5,7 @@ class UserModel {
   final String email;
   final String displayName;
   final String photoURL;
+  final String bio;
   final List<String> purchasedGames;
   final DateTime createdAt;
 
@@ -13,6 +14,7 @@ class UserModel {
     required this.email,
     required this.displayName,
     required this.photoURL,
+    required this.bio,
     required this.purchasedGames,
     required this.createdAt,
   });
@@ -23,8 +25,11 @@ class UserModel {
       email: data['email'] ?? '',
       displayName: data['displayName'] ?? '',
       photoURL: data['photoURL'] ?? '',
+      bio: data['bio'] ?? '',
       purchasedGames: List<String>.from(data['purchased_games'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] != null 
+          ? (data['createdAt'] as Timestamp).toDate() 
+          : DateTime.now(),
     );
   }
 
@@ -34,8 +39,25 @@ class UserModel {
       'email': email,
       'displayName': displayName,
       'photoURL': photoURL,
+      'bio': bio,
       'purchased_games': purchasedGames,
       'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  UserModel copyWith({
+    String? displayName,
+    String? photoURL,
+    String? bio,
+  }) {
+    return UserModel(
+      uid: uid,
+      email: email,
+      displayName: displayName ?? this.displayName,
+      photoURL: photoURL ?? this.photoURL,
+      bio: bio ?? this.bio,
+      purchasedGames: purchasedGames,
+      createdAt: createdAt,
+    );
   }
 }
