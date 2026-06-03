@@ -13,18 +13,21 @@ class FullDiaryScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final gameProvider = Provider.of<GameProvider>(context);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'My Game Diary',
-          style: TextStyle(color: Color(0xFF1E293B), fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -42,7 +45,7 @@ class FullDiaryScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.sports_esports_outlined, size: 64, color: const Color(0xFF94A3B8).withAlpha(100)),
                   const SizedBox(height: 16),
-                  const Text('Your diary is empty.', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16)),
+                  Text('Your diary is empty.', style: TextStyle(color: isDark ? Colors.grey.shade400 : const Color(0xFF94A3B8), fontSize: 16)),
                 ],
               ),
             );
@@ -58,7 +61,7 @@ class FullDiaryScreen extends StatelessWidget {
             itemCount: games.length,
             itemBuilder: (context, index) {
               final game = games[index];
-              return _GridGameCard(game: game);
+              return _GridGameCard(game: game, isDark: isDark);
             },
           );
         },
@@ -69,8 +72,9 @@ class FullDiaryScreen extends StatelessWidget {
 
 class _GridGameCard extends StatelessWidget {
   final GameModel game;
+  final bool isDark;
 
-  const _GridGameCard({required this.game});
+  const _GridGameCard({required this.game, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +89,9 @@ class _GridGameCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(isDark ? 50 : 20), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),

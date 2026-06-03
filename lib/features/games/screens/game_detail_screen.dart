@@ -46,8 +46,13 @@ class GameDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.grey.shade400 : const Color(0xFF64748B);
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: bgColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -89,7 +94,7 @@ class GameDetailScreen extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, const Color(0xFFF8FAFC).withAlpha(200), const Color(0xFFF8FAFC)],
+                        colors: [Colors.transparent, bgColor.withAlpha(200), bgColor],
                         stops: const [0.6, 0.9, 1.0],
                       ),
                     ),
@@ -113,12 +118,12 @@ class GameDetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               game.title,
-                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: textColor),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               '${game.developer} • ${game.releaseYear}',
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 16, color: secondaryTextColor, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -126,7 +131,7 @@ class GameDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade100,
+                          color: isDark ? Colors.amber.withAlpha(40) : Colors.amber.shade100,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.amber.shade300),
                         ),
@@ -136,7 +141,7 @@ class GameDetailScreen extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               game.rating.toStringAsFixed(1),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade800, fontSize: 16),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.amber.shade400 : Colors.amber.shade800, fontSize: 16),
                             ),
                           ],
                         ),
@@ -146,17 +151,17 @@ class GameDetailScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      _buildBadge(game.genre, Icons.category_rounded),
+                      _buildBadge(game.genre, Icons.category_rounded, isDark),
                       const SizedBox(width: 12),
-                      _buildBadge(game.platform, Icons.videogame_asset_rounded),
+                      _buildBadge(game.platform, Icons.videogame_asset_rounded, isDark),
                     ],
                   ),
                   const SizedBox(height: 32),
-                  const Text('About this game', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                  Text('About this game', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
                   const SizedBox(height: 12),
                   Text(
                     game.description,
-                    style: const TextStyle(fontSize: 16, color: Color(0xFF475569), height: 1.6),
+                    style: TextStyle(fontSize: 16, color: isDark ? Colors.grey.shade300 : const Color(0xFF475569), height: 1.6),
                   ),
                   const SizedBox(height: 100),
                 ],
@@ -168,19 +173,19 @@ class GameDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(String text, IconData icon) {
+  Widget _buildBadge(String text, IconData icon, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.indigo.withAlpha(20),
+        color: isDark ? Colors.indigo.withAlpha(40) : Colors.indigo.withAlpha(20),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.indigo),
+          Icon(icon, size: 16, color: isDark ? Colors.indigo.shade300 : Colors.indigo),
           const SizedBox(width: 6),
-          Text(text, style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(text, style: TextStyle(color: isDark ? Colors.indigo.shade300 : Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),
     );

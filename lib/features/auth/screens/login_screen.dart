@@ -9,6 +9,10 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.grey.shade400 : const Color(0xFF64748B);
 
     if (authProvider.errorMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -24,7 +28,7 @@ class LoginScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -34,32 +38,32 @@ class LoginScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.withAlpha(20),
+                  color: Colors.indigo.withAlpha(isDark ? 40 : 20),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: Colors.indigo.withAlpha(30)),
+                  border: Border.all(color: Colors.indigo.withAlpha(isDark ? 50 : 30)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sports_esports_rounded,
                   size: 72,
-                  color: Colors.indigo,
+                  color: isDark ? Colors.indigo.shade300 : Colors.indigo,
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'NexPlay',
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
+                  color: textColor,
                   letterSpacing: 1.2,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Level up your gaming experience',
                 style: TextStyle(
                   fontSize: 15,
-                  color: Color(0xFF64748B),
+                  color: secondaryTextColor,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -70,14 +74,14 @@ class LoginScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 128,
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(100),
+                    color: isDark ? Colors.grey.shade800.withAlpha(100) : Colors.white.withAlpha(100),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade100),
+                    border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade100),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
@@ -85,11 +89,11 @@ class LoginScreen extends StatelessWidget {
                           color: Colors.indigo,
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'Authenticating with Provider...',
                         style: TextStyle(
-                          color: Color(0xFF64748B),
+                          color: secondaryTextColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -105,9 +109,9 @@ class LoginScreen extends StatelessWidget {
                     height: 22,
                   ),
                   label: 'Sign in with Google',
-                  backgroundColor: Colors.white,
-                  textColor: const Color(0xFF1E293B),
-                  hasBorder: true,
+                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
+                  textColor: isDark ? Colors.white : const Color(0xFF1E293B),
+                  hasBorder: !isDark,
                 ),
                 const SizedBox(height: 16),
                 _SocialLoginButton(
@@ -118,17 +122,17 @@ class LoginScreen extends StatelessWidget {
                     colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                   label: 'Sign in with GitHub',
-                  backgroundColor: const Color(0xFF0F172A),
+                  backgroundColor: isDark ? Colors.black : const Color(0xFF0F172A),
                   textColor: Colors.white,
                   hasBorder: false,
                 ),
               ],
 
               const SizedBox(height: 48),
-              const Text(
+              Text(
                 'NexPlay - Your Premium Gaming Hub',
                 style: TextStyle(
-                  color: Color(0xFF94A3B8),
+                  color: isDark ? Colors.grey.shade600 : const Color(0xFF94A3B8),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,

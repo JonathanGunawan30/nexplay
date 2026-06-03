@@ -43,12 +43,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final String photoURL = authProvider.userModel?.photoURL ?? authProvider.user?.photoURL ?? '';
     final String displayName = authProvider.userModel?.displayName ?? authProvider.user?.displayName ?? 'Player';
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Discover', style: TextStyle(color: Color(0xFF1E293B), fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text('Discover', style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           GestureDetector(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
@@ -85,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 24),
                     const Text('Welcome back,', style: TextStyle(fontSize: 16, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
                     const SizedBox(height: 4),
-                    Text(displayName, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF1E293B))),
+                    Text(displayName, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: textColor)),
                     if (authProvider.userModel?.bio.isNotEmpty == true) ...[
                       const SizedBox(height: 8),
                       Text(authProvider.userModel!.bio, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), fontStyle: FontStyle.italic)),
@@ -95,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Text('Game Diary', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                        Text('Game Diary', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
                         Row(
                           children: [
                             IconButton(
@@ -116,7 +119,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ],
                 ),
               ),
-              // Slider Horizontal
               SizedBox(
                 height: 200,
                 child: StreamBuilder<List<GameModel>>(
@@ -146,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         final game = games[index];
                         return Padding(
                           padding: const EdgeInsets.only(right: 16.0),
-                          child: _MiniGameCard(game: game),
+                          child: _MiniGameCard(game: game, isDark: isDark),
                         );
                       },
                     );
@@ -159,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => authProvider.signOut(),
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: isDark ? Colors.grey.shade800 : const Color(0xFF1E293B),
         icon: const Icon(Icons.logout_rounded, size: 20, color: Colors.white),
         label: const Text('Logout', style: TextStyle(color: Colors.white)),
       ),
@@ -169,7 +171,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 class _MiniGameCard extends StatelessWidget {
   final GameModel game;
-  const _MiniGameCard({required this.game});
+  final bool isDark;
+  const _MiniGameCard({required this.game, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -183,18 +186,17 @@ class _MiniGameCard extends StatelessWidget {
         );
       },
       child: Container(
-        width: 130, // Lebar fixed untuk slider
+        width: 130,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(isDark ? 50 : 15), blurRadius: 8, offset: const Offset(0, 4))],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Poster Game
               game.imageUrl.isNotEmpty
                   ? Image.network(
                       game.imageUrl,
@@ -203,7 +205,6 @@ class _MiniGameCard extends StatelessWidget {
                     )
                   : Container(color: Colors.grey.shade200, child: const Icon(Icons.sports_esports, color: Colors.grey, size: 30)),
               
-              // Gradient Overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -220,7 +221,6 @@ class _MiniGameCard extends StatelessWidget {
                 ),
               ),
 
-              // Rating di pojok kanan atas
               Positioned(
                 top: 6,
                 right: 6,
@@ -242,7 +242,6 @@ class _MiniGameCard extends StatelessWidget {
                 ),
               ),
 
-              // Judul di Bawah
               Positioned(
                 bottom: 10,
                 left: 10,

@@ -28,19 +28,23 @@ class _AddGameScreenState extends State<AddGameScreen> {
   Widget build(BuildContext context) {
     final gameProvider = Provider.of<GameProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
+    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final inputColor = isDark ? const Color(0xFF1E293B) : Colors.white;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Color(0xFF1E293B)),
+          icon: Icon(Icons.close_rounded, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Add to Diary',
-          style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -67,9 +71,9 @@ class _AddGameScreenState extends State<AddGameScreen> {
                     width: double.infinity,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: inputColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
                       image: _previewBytes != null
                           ? DecorationImage(
                               image: MemoryImage(_previewBytes!),
@@ -83,7 +87,7 @@ class _AddGameScreenState extends State<AddGameScreen> {
                             children: [
                               Icon(Icons.add_photo_alternate_rounded, size: 50, color: Colors.indigo.withAlpha(100)),
                               const SizedBox(height: 8),
-                              const Text('Upload Cover Image', style: TextStyle(color: Color(0xFF94A3B8))),
+                              Text('Upload Cover Image', style: TextStyle(color: isDark ? Colors.grey.shade400 : const Color(0xFF94A3B8))),
                             ],
                           )
                         : null,
@@ -91,13 +95,13 @@ class _AddGameScreenState extends State<AddGameScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              _buildLabel('Game Title'),
-              _buildTextField(_titleController, 'Enter game title', Icons.title_rounded),
+              _buildLabel('Game Title', isDark),
+              _buildTextField(_titleController, 'Enter game title', Icons.title_rounded, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 20),
-              _buildLabel('Genre'),
-              _buildTextField(_genreController, 'Enter game genre', Icons.category_rounded),
+              _buildLabel('Genre', isDark),
+              _buildTextField(_genreController, 'Enter game genre', Icons.category_rounded, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 20),
-              _buildLabel('Rating (0-5)'),
+              _buildLabel('Rating (0-5)', isDark),
               Slider(
                 value: _rating,
                 min: 0,
@@ -107,17 +111,17 @@ class _AddGameScreenState extends State<AddGameScreen> {
                 onChanged: (value) => setState(() => _rating = value),
               ),
               const SizedBox(height: 20),
-              _buildLabel('Developer'),
-              _buildTextField(_developerController, 'Enter developer name', Icons.business_rounded),
+              _buildLabel('Developer', isDark),
+              _buildTextField(_developerController, 'Enter developer name', Icons.business_rounded, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 20),
-              _buildLabel('Release Year'),
-              _buildTextField(_yearController, 'Enter release year', Icons.calendar_today_rounded, keyboardType: TextInputType.number),
+              _buildLabel('Release Year', isDark),
+              _buildTextField(_yearController, 'Enter release year', Icons.calendar_today_rounded, keyboardType: TextInputType.number, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 20),
-              _buildLabel('Platform'),
-              _buildTextField(_platformController, 'Enter target platforms', Icons.videogame_asset_rounded),
+              _buildLabel('Platform', isDark),
+              _buildTextField(_platformController, 'Enter target platforms', Icons.videogame_asset_rounded, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 20),
-              _buildLabel('Description'),
-              _buildTextField(_descriptionController, 'Write something about the game...', Icons.description_rounded, maxLines: 3),
+              _buildLabel('Description', isDark),
+              _buildTextField(_descriptionController, 'Write something about the game...', Icons.description_rounded, maxLines: 3, isDark: isDark, inputColor: inputColor),
               const SizedBox(height: 40),
               if (gameProvider.isLoading)
                 const Center(child: CircularProgressIndicator(color: Colors.indigo))
@@ -163,30 +167,32 @@ class _AddGameScreenState extends State<AddGameScreen> {
     );
   }
 
-  Widget _buildLabel(String label) {
+  Widget _buildLabel(String label, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 4),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B)),
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {TextInputType keyboardType = TextInputType.text, int maxLines = 1, required bool isDark, required Color inputColor}) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
+      style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       validator: (value) => value == null || value.isEmpty ? 'This field is required' : null,
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: inputColor,
         prefixIcon: Icon(icon, color: Colors.indigo),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
       ),
     );

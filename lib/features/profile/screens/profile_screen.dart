@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../../../core/providers/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final profileProvider = Provider.of<ProfileProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     
     String photoURL = '';
     if (authProvider.userModel != null && authProvider.userModel!.photoURL.isNotEmpty) {
@@ -38,16 +40,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       photoURL = authProvider.user!.photoURL!;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final inputColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Edit Profile', style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold)),
+        title: Text('Edit Profile', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -74,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
+                        border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.white, width: 4),
                         boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 20, offset: const Offset(0, 10))],
                       ),
                       child: ClipOval(
@@ -94,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       right: 4,
                       child: Container(
                         padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(color: Colors.indigo, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 3)),
+                        decoration: BoxDecoration(color: Colors.indigo, shape: BoxShape.circle, border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.white, width: 3)),
                         child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
                       ),
                     ),
@@ -105,11 +110,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 48),
             _buildFieldLabel('Full Name'),
             const SizedBox(height: 10),
-            _buildTextField(controller: _nameController, hint: 'Enter your name', icon: Icons.person_outline_rounded),
+            _buildTextField(controller: _nameController, hint: 'Enter your name', icon: Icons.person_outline_rounded, isDark: isDark, inputColor: inputColor),
             const SizedBox(height: 24),
             _buildFieldLabel('Bio'),
             const SizedBox(height: 10),
-            _buildTextField(controller: _bioController, hint: 'Tell us a bit about yourself...', icon: Icons.info_outline_rounded, maxLines: 3),
+            _buildTextField(controller: _bioController, hint: 'Tell us a bit about yourself...', icon: Icons.info_outline_rounded, maxLines: 3, isDark: isDark, inputColor: inputColor),
+            const SizedBox(height: 32),
+            _buildFieldLabel('App Theme'),
+            const SizedBox(height: 10),
+            Container(
+              decoration: BoxDecoration(
+                color: inputColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  _ThemeOption(
+                    title: 'Light',
+                    icon: Icons.light_mode_rounded,
+                    isSelected: themeProvider.themeMode == ThemeMode.light,
+                    onTap: () => themeProvider.setThemeMode(ThemeMode.light),
+                    isDark: isDark,
+                  ),
+                  Container(width: 1, height: 40, color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+                  _ThemeOption(
+                    title: 'System',
+                    icon: Icons.brightness_auto_rounded,
+                    isSelected: themeProvider.themeMode == ThemeMode.system,
+                    onTap: () => themeProvider.setThemeMode(ThemeMode.system),
+                    isDark: isDark,
+                  ),
+                  Container(width: 1, height: 40, color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+                  _ThemeOption(
+                    title: 'Dark',
+                    icon: Icons.dark_mode_rounded,
+                    isSelected: themeProvider.themeMode == ThemeMode.dark,
+                    onTap: () => themeProvider.setThemeMode(ThemeMode.dark),
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 40),
             if (profileProvider.isLoading)
               const CircularProgressIndicator(color: Colors.indigo)
@@ -146,20 +188,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Align(alignment: Alignment.centerLeft, child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF64748B))));
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String hint, required IconData icon, int maxLines = 1}) {
+  Widget _buildTextField({required TextEditingController controller, required String hint, required IconData icon, int maxLines = 1, required bool isDark, required Color inputColor}) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: inputColor,
         prefixIcon: Icon(icon, color: Colors.indigo),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
+      ),
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDark;
+
+  const _ThemeOption({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.indigo.withAlpha(30) : Colors.transparent,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: isSelected ? Colors.indigo : (isDark ? Colors.grey.shade400 : Colors.grey.shade600), size: 20),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? Colors.indigo : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
