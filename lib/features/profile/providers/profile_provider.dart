@@ -59,9 +59,23 @@ class ProfileProvider with ChangeNotifier {
       
       notifyListeners();
     } catch (e) {
-      debugPrint('Update Profile Error: $e');
+      debugPrint(e.toString());
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> updateWallpaper(String wallpaperPath) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) return;
+
+      await _db.collection(AppConstants.usersCollection).doc(user.uid).update({
+        'selectedWallpaper': wallpaperPath,
+      });
+      notifyListeners();
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 

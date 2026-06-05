@@ -9,4 +9,5 @@ class AppConstants {
   static const String usersCollection = 'users';
   static const String gamesCollection = 'games';
   static const String favoriteGamesCollection = 'favorite_games';
+  static const String commentsCollection = 'comments';
 }

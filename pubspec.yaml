@@ -24,6 +24,11 @@ dependencies:
   lottie: ^3.3.3
   provider: ^6.1.5+1
   shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
+  webview_flutter: ^4.13.1
+  webview_windows: ^0.4.0
+  html: ^0.15.4
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -35,3 +40,4 @@ flutter:
   assets:
     - .env
     - assets/
+    - assets/wallpaper/

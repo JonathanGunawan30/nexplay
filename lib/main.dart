@@ -10,6 +10,8 @@ import 'features/profile/providers/profile_provider.dart';
 import 'features/games/screens/home_screen.dart';
 import 'features/games/providers/game_provider.dart';
 import 'core/providers/theme_provider.dart';
+import 'features/games/providers/premium_game_provider.dart';
+import 'features/games/providers/comment_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => GameProvider()),
+        ChangeNotifierProvider(create: (_) => PremiumGameProvider()),
+        ChangeNotifierProvider(create: (_) => CommentProvider()),
       ],
       child: const NexPlayApp(),
     ),

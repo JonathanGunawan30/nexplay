@@ -88,6 +88,7 @@ class AuthService {
         photoURL: user.photoURL ?? '',
         bio: 'Hello there!',
         purchasedGames: [],
+        selectedWallpaper: '',
         createdAt: DateTime.now(),
       );
       await ref.set(newUser.toMap());

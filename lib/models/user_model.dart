@@ -7,6 +7,7 @@ class UserModel {
   final String photoURL;
   final String bio;
   final List<String> purchasedGames;
+  final String selectedWallpaper;
   final DateTime createdAt;
 
   UserModel({
@@ -16,6 +17,7 @@ class UserModel {
     required this.photoURL,
     required this.bio,
     required this.purchasedGames,
+    required this.selectedWallpaper,
     required this.createdAt,
   });
 
@@ -27,6 +29,7 @@ class UserModel {
       photoURL: data['photoURL'] ?? '',
       bio: data['bio'] ?? '',
       purchasedGames: List<String>.from(data['purchased_games'] ?? []),
+      selectedWallpaper: data['selectedWallpaper'] ?? '',
       createdAt: data['createdAt'] != null 
           ? (data['createdAt'] as Timestamp).toDate() 
           : DateTime.now(),
@@ -41,6 +44,7 @@ class UserModel {
       'photoURL': photoURL,
       'bio': bio,
       'purchased_games': purchasedGames,
+      'selectedWallpaper': selectedWallpaper,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -49,6 +53,7 @@ class UserModel {
     String? displayName,
     String? photoURL,
     String? bio,
+    String? selectedWallpaper,
   }) {
     return UserModel(
       uid: uid,
@@ -57,6 +62,7 @@ class UserModel {
       photoURL: photoURL ?? this.photoURL,
       bio: bio ?? this.bio,
       purchasedGames: purchasedGames,
+      selectedWallpaper: selectedWallpaper ?? this.selectedWallpaper,
       createdAt: createdAt,
     );
   }
