@@ -8,6 +8,9 @@ class UserModel {
   final String bio;
   final List<String> purchasedGames;
   final String selectedWallpaper;
+  final List<String> friends;
+  final List<String> sentRequests;
+  final List<String> receivedRequests;
   final DateTime createdAt;
 
   UserModel({
@@ -18,6 +21,9 @@ class UserModel {
     required this.bio,
     required this.purchasedGames,
     required this.selectedWallpaper,
+    this.friends = const [],
+    this.sentRequests = const [],
+    this.receivedRequests = const [],
     required this.createdAt,
   });
 
@@ -30,6 +36,9 @@ class UserModel {
       bio: data['bio'] ?? '',
       purchasedGames: List<String>.from(data['purchased_games'] ?? []),
       selectedWallpaper: data['selectedWallpaper'] ?? '',
+      friends: List<String>.from(data['friends'] ?? []),
+      sentRequests: List<String>.from(data['sentRequests'] ?? []),
+      receivedRequests: List<String>.from(data['receivedRequests'] ?? []),
       createdAt: data['createdAt'] != null 
           ? (data['createdAt'] as Timestamp).toDate() 
           : DateTime.now(),
@@ -45,6 +54,9 @@ class UserModel {
       'bio': bio,
       'purchased_games': purchasedGames,
       'selectedWallpaper': selectedWallpaper,
+      'friends': friends,
+      'sentRequests': sentRequests,
+      'receivedRequests': receivedRequests,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -54,6 +66,9 @@ class UserModel {
     String? photoURL,
     String? bio,
     String? selectedWallpaper,
+    List<String>? friends,
+    List<String>? sentRequests,
+    List<String>? receivedRequests,
   }) {
     return UserModel(
       uid: uid,
@@ -63,6 +78,9 @@ class UserModel {
       bio: bio ?? this.bio,
       purchasedGames: purchasedGames,
       selectedWallpaper: selectedWallpaper ?? this.selectedWallpaper,
+      friends: friends ?? this.friends,
+      sentRequests: sentRequests ?? this.sentRequests,
+      receivedRequests: receivedRequests ?? this.receivedRequests,
       createdAt: createdAt,
     );
   }

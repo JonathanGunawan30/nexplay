@@ -69,6 +69,20 @@ class AuthProvider with ChangeNotifier {
     await _authService.signOut();
   }
 
+  Future<bool> addPurchasedGame(String gameId) async {
+    if (_user == null) return false;
+    _setLoading(true);
+    try {
+      await _authService.addPurchasedGame(_user!.uid, gameId);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _errorMessage = 'Failed to update purchased games.';
+      _setLoading(false);
+      return false;
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

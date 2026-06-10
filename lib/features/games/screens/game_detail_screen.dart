@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../models/game_model.dart';
 import '../providers/game_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class GameDetailScreen extends StatelessWidget {
   final GameModel game;
@@ -12,32 +13,45 @@ class GameDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Game'),
-        content: const Text('Are you sure you want to remove this game from your diary? This action cannot be undone.'),
+        backgroundColor: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Delete Entry', style: TextStyle(fontWeight: FontWeight.w900)),
+        content: const Text(
+          'Are you sure you want to remove this memory from your diary? This action is permanent.',
+          style: TextStyle(height: 1.5),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Keep it', style: TextStyle(color: Colors.indigoAccent.shade100, fontWeight: FontWeight.bold)),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final provider = Provider.of<GameProvider>(context, listen: false);
-              await provider.deleteGame(game.id);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Game deleted successfully!'), backgroundColor: Colors.green),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final provider = Provider.of<GameProvider>(context, listen: false);
+                await provider.deleteGame(game.id);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Memory removed from diary'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.redAccent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Delete'),
             ),
-            child: const Text('Delete'),
           ),
         ],
       ),
@@ -46,56 +60,89 @@ class GameDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final secondaryTextColor = isDark ? Colors.grey.shade400 : const Color(0xFF64748B);
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final accentColor = Colors.indigoAccent;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
+
+    final bool isMyGame = authProvider.user?.uid == game.userId;
 
     return Scaffold(
       backgroundColor: bgColor,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 400,
+            expandedHeight: 450,
             pinned: true,
-            backgroundColor: const Color(0xFF0F172A),
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            stretch: true,
+            backgroundColor: bgColor,
+            elevation: 0,
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.black38,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.redAccent.withAlpha(200), shape: BoxShape.circle),
-                  child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 18),
+              if (isMyGame)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.redAccent.withOpacity(0.8),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+                      onPressed: () => _showDeleteConfirmation(context),
+                    ),
+                  ),
                 ),
-                onPressed: () => _showDeleteConfirmation(context),
-              ),
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: Text(
+                game.title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.0), 
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
+              ],
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  game.imageUrl.isNotEmpty
-                      ? Image.network(
-                          game.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade800, child: const Icon(Icons.videogame_asset, color: Colors.white54, size: 80)),
-                        )
-                      : Container(color: Colors.grey.shade800, child: const Icon(Icons.videogame_asset, color: Colors.white54, size: 80)),
+                  Hero(
+                    tag: 'game-image-${game.id}',
+                    child: game.imageUrl.isNotEmpty
+                        ? (game.imageUrl.startsWith('assets/')
+                            ? Image.asset(game.imageUrl, fit: BoxFit.cover)
+                            : Image.network(game.imageUrl, fit: BoxFit.cover))
+                        : Container(
+                            color: accentColor.withOpacity(0.1),
+                            child: Icon(Icons.videogame_asset, size: 80, color: accentColor.withOpacity(0.5)),
+                          ),
+                  ),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, bgColor.withAlpha(200), bgColor],
-                        stops: const [0.6, 0.9, 1.0],
+                        colors: [
+                          Colors.black.withOpacity(0.4),
+                          Colors.transparent,
+                          bgColor.withOpacity(0.8),
+                          bgColor,
+                        ],
+                        stops: const [0.0, 0.4, 0.8, 1.0],
                       ),
                     ),
                   ),
@@ -105,65 +152,84 @@ class GameDetailScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 20),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              game.title,
-                              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: textColor),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${game.developer} • ${game.releaseYear}',
-                              style: TextStyle(fontSize: 16, color: secondaryTextColor, fontWeight: FontWeight.w500),
-                            ),
-                          ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: accentColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          game.genre.toUpperCase(),
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.amber.withAlpha(40) : Colors.amber.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.amber.shade300),
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.star_rounded, size: 20, color: Colors.amber),
+                            const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                             const SizedBox(width: 4),
                             Text(
                               game.rating.toStringAsFixed(1),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.amber.shade400 : Colors.amber.shade800, fontSize: 16),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: textColor,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      _buildBadge(game.genre, Icons.category_rounded, isDark),
-                      const SizedBox(width: 12),
-                      _buildBadge(game.platform, Icons.videogame_asset_rounded, isDark),
-                    ],
+                  const SizedBox(height: 20),
+                  Text(
+                    game.title,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: textColor,
+                      height: 1.2,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Developed by ${game.developer}',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: textColor.withOpacity(0.5),
+                    ),
                   ),
                   const SizedBox(height: 32),
-                  Text('About this game', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
-                  const SizedBox(height: 12),
-                  Text(
-                    game.description,
-                    style: TextStyle(fontSize: 16, color: isDark ? Colors.grey.shade300 : const Color(0xFF475569), height: 1.6),
+                  _buildInfoSection('Overview', game.description, textColor, isDark),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(child: _buildInfoCard('Platform', game.platform, Icons.devices_rounded, accentColor, isDark)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildInfoCard('Release', game.releaseYear, Icons.calendar_today_rounded, accentColor, isDark)),
+                    ],
                   ),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 120),
                 ],
               ),
             ),
@@ -173,19 +239,64 @@ class GameDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(String text, IconData icon, bool isDark) {
+  Widget _buildInfoSection(String title, String content, Color textColor, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: textColor,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          content,
+          style: TextStyle(
+            fontSize: 16,
+            color: textColor.withOpacity(0.7),
+            height: 1.7,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(String label, String value, IconData icon, Color accentColor, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.indigo.withAlpha(40) : Colors.indigo.withAlpha(20),
-        borderRadius: BorderRadius.circular(8),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: isDark ? Colors.indigo.shade300 : Colors.indigo),
-          const SizedBox(width: 6),
-          Text(text, style: TextStyle(color: isDark ? Colors.indigo.shade300 : Colors.indigo, fontWeight: FontWeight.w600, fontSize: 13)),
+          Icon(icon, color: accentColor, size: 24),
+          const SizedBox(height: 16),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white38 : Colors.black38,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+          ),
         ],
       ),
     );

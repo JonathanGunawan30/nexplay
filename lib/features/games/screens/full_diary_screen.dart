@@ -21,13 +21,20 @@ class FullDiaryScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.canPop(context) 
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Text(
           'My Game Diary',
-          style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: textColor, 
+            fontSize: 24, 
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
         ),
         centerTitle: true,
       ),
@@ -99,11 +106,13 @@ class _GridGameCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               game.imageUrl.isNotEmpty
-                  ? Image.network(
-                      game.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade200, child: const Icon(Icons.broken_image_rounded, color: Colors.grey, size: 40)),
-                    )
+                  ? (game.imageUrl.startsWith('assets/')
+                      ? Image.asset(game.imageUrl, fit: BoxFit.cover)
+                      : Image.network(
+                          game.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade200, child: const Icon(Icons.broken_image_rounded, color: Colors.grey, size: 40)),
+                        ))
                   : Container(color: Colors.grey.shade200, child: const Icon(Icons.sports_esports, color: Colors.grey, size: 40)),
               Container(
                 decoration: BoxDecoration(

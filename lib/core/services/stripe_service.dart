@@ -1,0 +1,68 @@
+import 'dart:io' show Platform;
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+
+class StripeService {
+  StripeService._();
+  static final StripeService instance = StripeService._();
+
+  final Dio _dio = Dio();
+
+  // Ganti dengan URL backend Anda
+  // 10.0.2.2 untuk Android Emulator, localhost untuk iOS Simulator
+  String get _baseUrl {
+    if (kIsWeb) return 'http://localhost:3000';
+    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
+    return 'http://localhost:3000';
+  }
+
+  Future<bool> makePayment({
+    required double amount,
+    required String currency,
+  }) async {
+    // flutter_stripe saat ini hanya mendukung iOS dan Android secara penuh
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      debugPrint('Stripe is only supported on Android and iOS.');
+      return false;
+    }
+
+    try {
+      // 1. Create Payment Intent di Backend
+      final response = await _dio.post(
+        '$_baseUrl/create-payment-intent',
+        data: {
+          'amount': (amount * 100).toInt(), // Konversi ke sen
+          'currency': currency,
+        },
+      );
+
+      if (response.data == null || response.data['clientSecret'] == null) {
+        return false;
+      }
+
+      final String clientSecret = response.data['clientSecret'];
+
+      // 2. Inisialisasi Payment Sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'NexPlay Gaming',
+          style: ThemeMode.dark,
+        ),
+      );
+
+      // 3. Tampilkan Payment Sheet
+      await Stripe.instance.presentPaymentSheet();
+
+      return true;
+    } catch (e) {
+      debugPrint('Stripe Error: $e');
+      if (e is StripeException) {
+        debugPrint('Stripe Exception: ${e.error.localizedMessage}');
+      }
+      return false;
+    }
+  }
+}

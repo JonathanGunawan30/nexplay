@@ -80,15 +80,29 @@ class AuthService {
     DocumentReference ref = _db.collection(AppConstants.usersCollection).doc(user.uid);
     DocumentSnapshot doc = await ref.get();
 
+    // Pastikan kita mendapatkan URL foto terbaik dari provider (Google/Github)
+    String? oauthPhotoURL = user.photoURL;
+    if (user.providerData.isNotEmpty) {
+      for (var profile in user.providerData) {
+        if (profile.photoURL != null) {
+          oauthPhotoURL = profile.photoURL;
+          break;
+        }
+      }
+    }
+
     if (!doc.exists) {
       UserModel newUser = UserModel(
         uid: user.uid,
         email: user.email ?? '',
         displayName: user.displayName ?? 'Player',
-        photoURL: user.photoURL ?? '',
+        photoURL: oauthPhotoURL ?? '',
         bio: 'Hello there!',
         purchasedGames: [],
         selectedWallpaper: '',
+        friends: [],
+        sentRequests: [],
+        receivedRequests: [],
         createdAt: DateTime.now(),
       );
       await ref.set(newUser.toMap());
@@ -96,9 +110,11 @@ class AuthService {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
       Map<String, dynamic> updates = {};
       
-      if ((data['photoURL'] == null || data['photoURL'] == '') && user.photoURL != null) {
-        updates['photoURL'] = user.photoURL;
+      // Update jika foto di database kosong tapi foto dari OAuth tersedia
+      if ((data['photoURL'] == null || data['photoURL'] == '') && oauthPhotoURL != null) {
+        updates['photoURL'] = oauthPhotoURL;
       }
+      
       if ((data['displayName'] == null || data['displayName'] == '') && user.displayName != null) {
         updates['displayName'] = user.displayName;
       }
@@ -106,6 +122,17 @@ class AuthService {
       if (updates.isNotEmpty) {
         await ref.update(updates);
       }
+    }
+  }
+
+  Future<void> addPurchasedGame(String uid, String gameId) async {
+    try {
+      await _db.collection(AppConstants.usersCollection).doc(uid).update({
+        'purchased_games': FieldValue.arrayUnion([gameId]),
+      });
+    } catch (e) {
+      debugPrint('Error updating purchased games: $e');
+      rethrow;
     }
   }
 

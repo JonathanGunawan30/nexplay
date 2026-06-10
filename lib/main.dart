@@ -2,26 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'core/constants/constants.dart';
 import 'firebase_options.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/success_screen.dart';
 import 'features/profile/providers/profile_provider.dart';
-import 'features/games/screens/home_screen.dart';
+import 'features/games/screens/main_screen.dart';
 import 'features/games/providers/game_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'features/games/providers/premium_game_provider.dart';
 import 'features/games/providers/comment_provider.dart';
+import 'features/social/providers/social_provider.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
+  }
+
+  // Initialize Stripe safely
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    try {
+      Stripe.publishableKey = AppConstants.stripePublishableKey;
+      await Stripe.instance.applySettings();
+    } catch (e) {
+      debugPrint('Stripe initialization failed: $e');
+    }
   }
 
   runApp(
@@ -33,6 +49,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => GameProvider()),
         ChangeNotifierProvider(create: (_) => PremiumGameProvider()),
         ChangeNotifierProvider(create: (_) => CommentProvider()),
+        ChangeNotifierProvider(create: (_) => SocialProvider()),
       ],
       child: const NexPlayApp(),
     ),
@@ -106,6 +123,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return isAuthenticated ? const HomeScreen() : const LoginScreen();
+    return isAuthenticated ? const MainScreen() : const LoginScreen();
   }
 }
