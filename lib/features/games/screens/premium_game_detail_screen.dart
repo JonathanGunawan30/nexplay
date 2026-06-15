@@ -31,10 +31,13 @@ class _PremiumGameDetailScreenState extends State<PremiumGameDetailScreen> {
 
   Future<void> _handlePayment(AuthProvider authProvider) async {
     setState(() => _isProcessingPayment = true);
-    
+
     final success = await StripeService.instance.makePayment(
       amount: widget.game.price,
       currency: 'usd',
+      email: authProvider.user?.email ?? '',
+      name: authProvider.userModel?.displayName ?? authProvider.user?.displayName ?? 'Player',
+      gameName: widget.game.title,
     );
 
     if (success) {

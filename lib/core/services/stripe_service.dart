@@ -10,8 +10,6 @@ class StripeService {
 
   final Dio _dio = Dio();
 
-  // Ganti dengan URL backend Anda
-  // 10.0.2.2 untuk Android Emulator, localhost untuk iOS Simulator
   String get _baseUrl {
     if (kIsWeb) return 'http://localhost:3000';
     if (Platform.isAndroid) return 'http://10.0.2.2:3000';
@@ -21,19 +19,20 @@ class StripeService {
   Future<bool> makePayment({
     required double amount,
     required String currency,
+    required String email,
+    required String name,
+    required String gameName,
   }) async {
-    // flutter_stripe saat ini hanya mendukung iOS dan Android secara penuh
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
       debugPrint('Stripe is only supported on Android and iOS.');
       return false;
     }
 
     try {
-      // 1. Create Payment Intent di Backend
       final response = await _dio.post(
         '$_baseUrl/create-payment-intent',
         data: {
-          'amount': (amount * 100).toInt(), // Konversi ke sen
+          'amount': (amount * 100).toInt(),
           'currency': currency,
         },
       );
@@ -44,7 +43,6 @@ class StripeService {
 
       final String clientSecret = response.data['clientSecret'];
 
-      // 2. Inisialisasi Payment Sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: clientSecret,
@@ -53,8 +51,18 @@ class StripeService {
         ),
       );
 
-      // 3. Tampilkan Payment Sheet
       await Stripe.instance.presentPaymentSheet();
+
+      await _dio.post(
+        '$_baseUrl/send-invoice',
+        data: {
+          'email': email,
+          'name': name,
+          'gameName': gameName,
+          'amount': (amount * 100).toInt(),
+          'currency': currency,
+        },
+      );
 
       return true;
     } catch (e) {
