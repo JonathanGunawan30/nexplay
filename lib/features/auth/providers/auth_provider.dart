@@ -83,6 +83,31 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // ponytail: Expose method to store transaction details via authProvider
+  Future<bool> addTransaction({
+    required String gameId,
+    required String gameTitle,
+    required double amount,
+    required String currency,
+    required String pdfUrl,
+  }) async {
+    if (_user == null) return false;
+    try {
+      await _authService.addTransaction(
+        _user!.uid,
+        gameId: gameId,
+        gameTitle: gameTitle,
+        amount: amount,
+        currency: currency,
+        pdfUrl: pdfUrl,
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = 'Failed to save transaction history.';
+      return false;
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

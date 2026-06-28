@@ -16,7 +16,7 @@ class StripeService {
     return AppConstants.stripeBaseUrl;
   }
 
-  Future<bool> makePayment({
+  Future<String?> makePayment({
     required double amount,
     required String currency,
     required String email,
@@ -25,7 +25,7 @@ class StripeService {
   }) async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
       debugPrint('Stripe is only supported on Android and iOS.');
-      return false;
+      return null;
     }
 
     try {
@@ -38,7 +38,7 @@ class StripeService {
       );
 
       if (response.data == null || response.data['clientSecret'] == null) {
-        return false;
+        return null;
       }
 
       final String clientSecret = response.data['clientSecret'];
@@ -53,7 +53,7 @@ class StripeService {
 
       await Stripe.instance.presentPaymentSheet();
 
-      await _dio.post(
+      final invoiceResponse = await _dio.post(
         '$_baseUrl/send-invoice',
         data: {
           'email': email,
@@ -64,13 +64,18 @@ class StripeService {
         },
       );
 
-      return true;
+      // ponytail: Return the Cloudinary PDF URL from the invoice endpoint response
+      if (invoiceResponse.data != null && invoiceResponse.data['success'] == true) {
+        return invoiceResponse.data['pdfUrl'] as String?;
+      }
+
+      return 'success_no_url';
     } catch (e) {
       debugPrint('Stripe Error: $e');
       if (e is StripeException) {
         debugPrint('Stripe Exception: ${e.error.localizedMessage}');
       }
-      return false;
+      return null;
     }
   }
 }

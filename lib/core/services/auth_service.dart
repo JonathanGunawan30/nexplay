@@ -136,6 +136,34 @@ class AuthService {
     }
   }
 
+  // ponytail: Store transaction history with price, date, and invoice PDF link from Cloudinary
+  Future<void> addTransaction(
+    String uid, {
+    required String gameId,
+    required String gameTitle,
+    required double amount,
+    required String currency,
+    required String pdfUrl,
+  }) async {
+    try {
+      await _db
+          .collection(AppConstants.usersCollection)
+          .doc(uid)
+          .collection('transactions')
+          .add({
+        'game_id': gameId,
+        'game_title': gameTitle,
+        'amount': amount,
+        'currency': currency,
+        'pdf_url': pdfUrl,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Error saving transaction: $e');
+      rethrow;
+    }
+  }
+
   Future<void> signOut() async {
     if (!kIsWeb) {
       await _googleSignIn.signOut();

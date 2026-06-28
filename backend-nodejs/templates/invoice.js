@@ -1,4 +1,4 @@
-const invoiceTemplate = ({ name, gameName, amount, currency, date }) => `
+const invoiceTemplate = ({ name, gameName, amount, currency, date, pdfUrl }) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -63,6 +63,17 @@ const invoiceTemplate = ({ name, gameName, amount, currency, date }) => `
               </table>
             </td>
           </tr>
+
+          ${pdfUrl ? `
+          <!-- ponytail: Button to view/download PDF from Cloudinary -->
+          <tr>
+            <td align="center" style="padding:8px 40px 24px;">
+              <a href="${pdfUrl}" target="_blank" style="display:inline-block;background:#4F46E5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;box-shadow:0 2px 4px rgba(79,70,229,0.2);">
+                Download PDF Invoice
+              </a>
+            </td>
+          </tr>
+          ` : ''}
 
           <tr>
             <td style="padding:0 40px 16px; ">

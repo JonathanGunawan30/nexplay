@@ -32,7 +32,7 @@ class _PremiumGameDetailScreenState extends State<PremiumGameDetailScreen> {
   Future<void> _handlePayment(AuthProvider authProvider) async {
     setState(() => _isProcessingPayment = true);
 
-    final success = await StripeService.instance.makePayment(
+    final pdfUrl = await StripeService.instance.makePayment(
       amount: widget.game.price,
       currency: 'usd',
       email: authProvider.user?.email ?? '',
@@ -40,8 +40,17 @@ class _PremiumGameDetailScreenState extends State<PremiumGameDetailScreen> {
       gameName: widget.game.title,
     );
 
-    if (success) {
+    if (pdfUrl != null) {
+      // ponytail: Save to both purchased games list and transaction history
       final updated = await authProvider.addPurchasedGame(widget.game.id);
+      await authProvider.addTransaction(
+        gameId: widget.game.id,
+        gameTitle: widget.game.title,
+        amount: widget.game.price,
+        currency: 'usd',
+        pdfUrl: pdfUrl,
+      );
+
       if (updated && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

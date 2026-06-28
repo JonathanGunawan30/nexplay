@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/providers/theme_provider.dart';
@@ -423,6 +426,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: const Text('Save Changes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ),
+                  const SizedBox(height: 32),
+                  // ponytail: Display Transaction History section
+                  _buildTransactionHistory(context, authProvider, textColor, cardColor, isDark),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -535,6 +541,168 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderSide: const BorderSide(color: Colors.indigoAccent, width: 2),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  // ponytail: StreamBuilder to display transactions list from Firestore inline with direct Cloudinary PDF invoice links
+  Widget _buildTransactionHistory(
+    BuildContext context,
+    AuthProvider authProvider,
+    Color textColor,
+    Color cardColor,
+    bool isDark,
+  ) {
+    if (authProvider.user == null) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Transaction History', textColor),
+        const SizedBox(height: 16),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(authProvider.user!.uid)
+              .collection('transactions')
+              .orderBy('timestamp', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error loading history',
+                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600),
+                ),
+              );
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: Colors.indigoAccent));
+            }
+            final docs = snapshot.data?.docs ?? [];
+            if (docs.isEmpty) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    'No purchases recorded yet.',
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.4),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: docs.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final tx = docs[index].data() as Map<String, dynamic>;
+                final timestamp = tx['timestamp'] as Timestamp?;
+                final dateStr = timestamp != null
+                    ? DateFormat('dd MMM yyyy, HH:mm').format(timestamp.toDate())
+                    : '-';
+                final amount = tx['amount'] as double? ?? 0.0;
+                final currency = tx['currency'] as String? ?? 'USD';
+                final pdfUrl = tx['pdf_url'] as String? ?? '';
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.indigoAccent.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.receipt_long_rounded, color: Colors.indigoAccent, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tx['game_title'] ?? 'Game Purchase',
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              dateStr,
+                              style: TextStyle(
+                                color: textColor.withOpacity(0.4),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${currency.toUpperCase()} ${amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (pdfUrl.isNotEmpty && pdfUrl != 'success_no_url') ...[
+                            const SizedBox(height: 4),
+                            GestureDetector(
+                              onTap: () async {
+                                final uri = Uri.parse(pdfUrl);
+                                try {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } catch (e) {
+                                  debugPrint('Error launching invoice URL: $e');
+                                }
+                              },
+                              child: Text(
+                                'Invoice PDF',
+                                style: TextStyle(
+                                  color: Colors.indigoAccent,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       ],
     );
