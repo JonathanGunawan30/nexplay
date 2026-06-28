@@ -60,9 +60,8 @@ app.post('/send-invoice', async (req, res) => {
 
     const invoiceId = `NP-${Date.now().toString().slice(-6)}`;
 
-    // ponytail: Send email with HTML content and PDF attachment
     await resend.emails.send({
-      from: 'NexPlay <onboarding@resend.dev>',
+      from: 'NexPlay <no-reply@fundraiser.my.id>',
       to: email,
       subject: `Invoice #${invoiceId} - ${gameName}`,
       html: invoiceTemplate({ name, gameName, amount, currency, date, pdfUrl: uploadResult.secure_url }),
