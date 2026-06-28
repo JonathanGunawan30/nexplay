@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:nexplay/core/constants/constants.dart';
 
 class StripeService {
   StripeService._();
@@ -12,8 +13,7 @@ class StripeService {
 
   String get _baseUrl {
     if (kIsWeb) return 'http://localhost:3000';
-    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
-    return 'http://localhost:3000';
+    return AppConstants.stripeBaseUrl;
   }
 
   Future<bool> makePayment({
