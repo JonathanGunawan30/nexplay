@@ -22,7 +22,8 @@ class PremiumGameProvider with ChangeNotifier {
       imageUrl: 'assets/games/minecraft.jpg',
       price: 9.99,
       rating: 4.9,
-      gameUrl: 'https://classic.minecraft.net/',
+      // ponytail: Use mobile-friendly web Minecraft with virtual touch/joystick controls
+      gameUrl: 'https://mcraft.fun/',
     ),
     const PremiumGameModel(
       id: 'cloud_breaklock',

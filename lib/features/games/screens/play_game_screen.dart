@@ -36,6 +36,8 @@ class _PlayGameScreenState extends State<PlayGameScreen> {
       } else {
         _mobileController = WebViewController()
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          // ponytail: Spoof desktop user agent to bypass 'requires keyboard' block on mobile
+          ..setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
           ..setNavigationDelegate(
             NavigationDelegate(
               onPageFinished: (_) {
