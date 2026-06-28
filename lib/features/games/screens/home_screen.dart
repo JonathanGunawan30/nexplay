@@ -31,7 +31,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Timer? _bannerTimer;
   final List<String> _banners = [
     'assets/banner/minecraft-banner.jpg',
-    'assets/banner/summer-sale-banner.png',
+    'assets/banner/nexplay-summer-sale.png',
+    'assets/banner/nexplay-play-more-1.png',
+    'assets/banner/nexplay-play-more-2.png'
   ];
 
   @override
