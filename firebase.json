@@ -1,1 +1,28 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"nexplay-np1","appId":"1:92598071273:android:72d62240d56e80d3ce2578","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"nexplay-np1","configurations":{"android":"1:92598071273:android:72d62240d56e80d3ce2578","ios":"1:92598071273:ios:c18ed1769cf61948ce2578","macos":"1:92598071273:ios:c18ed1769cf61948ce2578","web":"1:92598071273:web:6f905905966f8763ce2578","windows":"1:92598071273:web:f00b992db76ea49dce2578"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "nexplay-np1",
+          "appId": "1:92598071273:android:72d62240d56e80d3ce2578",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nexplay-np1",
+          "configurations": {
+            "android": "1:92598071273:android:72d62240d56e80d3ce2578",
+            "ios": "1:92598071273:ios:c18ed1769cf61948ce2578",
+            "macos": "1:92598071273:ios:c18ed1769cf61948ce2578",
+            "web": "1:92598071273:web:6f905905966f8763ce2578",
+            "windows": "1:92598071273:web:f00b992db76ea49dce2578"
+          }
+        }
+      }
+    }
+  }
+}
